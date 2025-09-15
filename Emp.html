@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ID Proof Collection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* ...existing styles... */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-radius: 25px; padding: 50px; max-width: 650px; width: 100%; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); animation: slideIn 0.8s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .header { text-align: center; margin-bottom: 35px; }
+        .header h2 { background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-size: 2.2rem; font-weight: 700; margin-bottom: 8px; }
+        .header .subtitle { color: #666; font-size: 1rem; font-weight: 400; }
+        .form-group { margin-bottom: 25px; }
+        .form-label { display: block; color: #444; font-weight: 500; margin-bottom: 8px; font-size: 1rem; }
+        .input-container { position: relative; display: flex; gap: 10px; align-items: stretch; }
+        .employeeid-input { flex: 1; padding: 15px 20px; padding-left: 50px; border: 2px solid #e1e8f0; border-radius: 15px; font-size: 1rem; transition: all 0.3s ease; background: white; outline: none; font-family: 'Poppins', sans-serif; }
+        .employeeid-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); transform: translateY(-2px); }
+        .input-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #999; font-size: 1.1rem; z-index: 2; }
+        .submit-btn { padding: 15px 25px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 15px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; font-family: 'Poppins', sans-serif; min-width: 120px; }
+        .btn-text-short { display: none; }
+        .btn-text { display: inline; }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+        .submit-btn:active { transform: translateY(0); }
+        .result-container { margin-top: 30px; }
+        .result-box { padding: 20px; border-radius: 15px; margin-bottom: 15px; animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .success-box { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); border: 2px solid #20bf6b; color: #0d5d2a; }
+        .error-box { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border: 2px solid #ff6b6b; color: #d63031; }
+        .info-box { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border: 2px solid #00cec9; color: #2d3436; }
+        .user-name { color: #667eea; font-weight: 600; font-size: 1.1rem; }
+        .status-badge { display: inline-block; padding: 8px 16px; border-radius: 25px; font-weight: 600; font-size: 0.9rem; margin: 8px 0; }
+        .status-collected { background: linear-gradient(135deg, #84fab0, #8fd3f4); color: #0d5d2a; }
+        .status-pending { background: linear-gradient(135deg, #ffecd2, #fcb69f); color: #e17055; }
+        .checkbox-container { display: flex; align-items: center; gap: 12px; margin: 20px 0; padding: 15px; background: rgba(102, 126, 234, 0.05); border-radius: 12px; border: 2px dashed rgba(102, 126, 234, 0.3); }
+        .custom-checkbox { width: 20px; height: 20px; cursor: pointer; accent-color: #667eea; }
+        .checkbox-label { color: #444; font-weight: 500; cursor: pointer; flex: 1; }
+        .confirm-btn { background: linear-gradient(135deg, #20bf6b, #01a3a4); color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-family: 'Poppins', sans-serif; width: 100%; margin-top: 10px; }
+        .confirm-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(32, 191, 107, 0.3); }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; margin-right: 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .icon { margin-right: 8px; font-size: 1.1rem; }
+        .footer { text-align: center; margin-top: 30px; padding: 20px; background: rgba(102, 126, 234, 0.05); border-radius: 15px; color: #666; font-size: 0.9rem; }
+        @media (max-width: 600px) {
+            .container { 
+                padding: 20px; 
+                margin: 10px; 
+                max-width: 100%;
+                width: calc(100% - 20px);
+            }
+            .input-container { 
+                flex-direction: column; 
+                width: 100%; 
+                gap: 15px;
+            }
+            .submit-btn {
+                width: 100%;
+                margin-top: 0;
+                min-width: 0;
+                box-sizing: border-box;
+                padding: 16px 20px;
+                font-size: 1rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .btn-text { display: none; }
+            .btn-text-short { display: inline; }
+            .header h2 { 
+                font-size: 1.6rem; 
+                line-height: 1.2;
+            }
+            .header .subtitle {
+                font-size: 0.9rem;
+            }
+            .employeeid-input {
+                padding: 16px 20px;
+                padding-left: 50px;
+                font-size: 1rem;
+                width: 100%;
+            }
+            .form-label {
+                font-size: 0.95rem;
+            }
+            .result-box {
+                padding: 15px;
+                font-size: 0.95rem;
+            }
+            .footer {
+                padding: 15px;
+                font-size: 0.85rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                margin: 5px;
+            }
+            .header h2 {
+                font-size: 1.4rem;
+            }
+            .submit-btn {
+                padding: 14px 16px;
+                font-size: 0.9rem;
+            }
+            .btn-text, .btn-text-short { display: none; }
+            .employeeid-input {
+                padding: 14px 16px;
+                padding-left: 45px;
+                font-size: 0.95rem;
+            }
+            .input-icon {
+                left: 15px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2><i class="fas fa-id-card icon"></i>ID Proof Collection</h2>
+            <p class="subtitle">Submit your ID proof for event verification</p>
+        </div>
+
+        <div class="form-group">
+            <label for="employeeId" class="form-label">
+                <i class="fas fa-id-card icon"></i>Enter Your EmployeeID
+            </label>
+            <div class="input-container">
+                <div style="position: relative; flex: 1;">
+                    <i class="fas fa-id-card input-icon"></i>
+                    <input type="text" id="employeeId" class="employeeid-input" placeholder="e.g. EMP12345" />
+                </div>
+                <button class="submit-btn" onclick="check()">
+                    <i class="fas fa-search"></i> 
+                    <span class="btn-text">Check Status</span>
+                    <span class="btn-text-short">Check</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="result" class="result-container"></div>
+
+        <div class="footer">
+            <i class="fas fa-info-circle icon"></i>
+            Please ensure you enter the correct EmployeeID registered for the event
+        </div>
+    </div>
+
+    <script> 
+    // PDF download function with dynamic background and font color based on Bus Number
+    function downloadPDF(data) {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString();
+        const timeStr = now.toLocaleTimeString();
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: "portrait",
+            unit: "mm",
+            format: [80, 110] // Compact ticket size
+        });
+
+        // Bus color mapping
+        const busColors = {
+            "1": { bg: "#AEDFF7", font: "#222222" },      // Blue
+            "2": { bg: "#FFFACD", font: "#222222" },      // Yellow
+            "3": { bg: "#C1FFC1", font: "#222222" },      // Neon
+            "4": { bg: "#FFDAB9", font: "#222222" },      // Skin
+            "5": { bg: "#E6E6FA", font: "#222222" }       // Grey
+        };
+
+        // Get bus number and color
+        const busNum = (data.busNumber || "").toString().trim();
+        const colorObj = busColors[busNum] || { bg: "#ffffff", font: "#222222" };
+
+        // Draw shadow (slightly offset)
+        doc.setFillColor("#CCCCCC");
+        doc.rect(6, 6, 70, 100, "F");
+
+        // Draw colored background
+        doc.setFillColor(colorObj.bg);
+        doc.rect(5, 5, 70, 100, "F");
+
+        // Draw dashed border for tearable effect
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.setLineDashPattern([2, 1], 0);
+        doc.rect(5, 5, 70, 100, "S");
+        doc.setLineDashPattern([], 0); // Reset dash pattern
+
+        // Set font color
+        doc.setTextColor(colorObj.font);
+
+        // Header
+        doc.setFont("courier", "bold");
+        doc.setFontSize(13);
+        doc.text("P.R.I.M.E DEPOT", 40, 14, {align: "center"});
+
+        // Info line (smaller font, centered) - date and time only
+        doc.setFont("courier", "normal");
+        doc.setFontSize(9);
+        doc.text(`Date: ${dateStr}  Time: ${timeStr}`, 40, 22, {align: "center"});
+        // Original long dashed line
+        doc.text("------------------------------------", 40, 31, {align: "center"});
+        doc.setFontSize(11);
+        doc.setFont("courier", "bold");
+        doc.text("PRIME OUTING 2025", 40, 36, {align: "center"});
+        doc.setFontSize(9);
+        doc.text("------------------------------------", 40, 41, {align: "center"});
+        doc.setFont("courier", "normal");
+        doc.text(`Employee ID : ${data.employeeId || ''}`, 10, 46);
+        doc.text(`Bus Number  : ${data.busNumber || ''}`, 10, 52);
+        doc.text(`Room Number : ${data.roomNumber || ''}`, 10, 57);
+        doc.text(`Name        : ${data.name || ''}`, 10, 62);
+        
+        // Add room partners if available
+        let nextYPos = 67; // Starting position after Name
+        if (data.roomPartners && data.roomPartners.length > 0) {
+            doc.setFontSize(9);
+            doc.text("Partner in Crime ( Room Edition)", 10, nextYPos);
+            nextYPos += 3; // Small gap after "Room Partners:" label
+            
+            data.roomPartners.forEach((partner, index) => {
+                if (nextYPos <= 82) { // Ensure we don't go beyond reasonable boundary
+                    doc.text(`${index + 1}. ${partner}`, 10, nextYPos);
+                    nextYPos += 3; // Tighter spacing between partners
+                }
+            });
+            nextYPos += 2; // Small gap after partners list
+        } else {
+            nextYPos += 3; // Small gap when no partners
+        }
+
+        doc.text("------------------------------------", 40, nextYPos, {align: "center"});
+        doc.setFont("courier", "bold");
+        doc.text("!! PRIME AAPKA HAMSAFAR !!", 40, nextYPos + 5, {align: "center"});
+        doc.setFont("courier", "normal");
+        doc.text("Aapki Yatra MangalMay Ho !", 40, nextYPos + 10, {align: "center"});
+        doc.setFont("courier", "normal");
+        doc.text(`HELPLINE: ${data.busSPOCNumber || 'N/A'}`, 10, nextYPos + 15);
+
+        doc.save(`PEC_Ticket_${data.employeeId || ''}.pdf`);
+    }
+        function check() {
+            const employeeId = document.getElementById("employeeId").value.trim();
+            const resultDiv = document.getElementById("result");
+            
+            if (!employeeId) {
+                resultDiv.innerHTML = `
+                    <div class="result-box error-box">
+                        <i class="fas fa-exclamation-triangle icon"></i>
+                        Please enter your EmployeeID
+                    </div>`;
+                return;
+            }
+
+            // Show loading state
+            resultDiv.innerHTML = `
+                <div class="result-box info-box">
+                    <span class="loading"></span>
+                    <i class="fas fa-search icon"></i>
+                    Checking your registration status...
+                </div>`;
+
+            google.script.run.withSuccessHandler(showResult).checkEmployeeId(employeeId);
+        }
+
+        function showResult(data) {
+            const div = document.getElementById("result");
+            if (!data) {
+                div.innerHTML = `
+                    <div class="result-box error-box">
+                        <i class="fas fa-times-circle icon"></i>
+                        <strong>EmployeeID not found</strong><br>
+                        Please check your EmployeeID or contact the organizers
+                    </div>`;
+                return;
+            }
+            window.lastData = data;
+            window.lastEmployeeData = data;
+            // Show ID proof dropdown and upload section
+            div.innerHTML = `
+                <div class="result-box info-box">
+                    <i class="fas fa-user icon"></i>
+                    Hello <span class="user-name">${data.name}</span>!<br>
+                    <span class="status-badge status-pending">
+                        <i class="fas fa-id-card icon"></i> Please submit your ID proof
+                    </span>
+                </div>
+                <div class="result-box" style="background: white; border: 2px solid #e1e8f0;">
+                    <div class="form-group">
+                        <label for="idProofType" class="form-label">
+                            <i class="fas fa-id-card icon"></i>Choose ID Proof Type
+                        </label>
+                        <select id="idProofType" class="employeeid-input">
+                            <option value="">Select</option>
+                            <option value="Aadhar">Aadhar</option>
+                            <option value="VoterID">Voter ID</option>
+                            <option value="PANCard">PAN Card</option>
+                            <option value="DrivingLicense">Driving License</option>
+                            <option value="Passport">Passport</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="idProofFile" class="form-label">
+                            <i class="fas fa-upload icon"></i>Upload ID Proof
+                        </label>
+                        <input type="file" id="idProofFile" accept="image/*,.pdf" class="employeeid-input" />
+                    </div>
+                    <button class="confirm-btn" onclick="uploadIdProof('${data.employeeId}')">
+                        <i class="fas fa-upload"></i>Submit ID Proof
+                    </button>
+                </div>`;
+        }
+
+        function update(row) {
+            const cb = document.getElementById("collected");
+            if (!cb || !cb.checked) {
+                const div = document.getElementById("result");
+                div.innerHTML += `
+                    <div class="result-box error-box">
+                        <i class="fas fa-exclamation-triangle icon"></i>
+                        Please tick the checkbox to confirm collection
+                    </div>`;
+                setTimeout(() => {
+                    const errorBoxes = document.querySelectorAll('.error-box');
+                    if (errorBoxes.length > 1) {
+                        errorBoxes[errorBoxes.length - 1].remove();
+                    }
+                }, 3000);
+                return;
+            }
+
+            // Show loading state
+            document.getElementById("result").innerHTML = `
+                <div class="result-box info-box">
+                    <span class="loading"></span>
+                    <i class="fas fa-save icon"></i>
+                    Updating your collection status...
+                </div>`;
+
+            google.script.run.withSuccessHandler(function(msg) {
+                document.getElementById("result").innerHTML = `
+                    <div class="result-box success-box">
+                        <i class="fas fa-check-circle icon"></i>
+                        <strong>${msg}</strong><br>
+                        Hello <span class="user-name">${window.lastEmployeeData.name}</span>!<br>
+                        <span class="status-badge status-collected">
+                            <i class="fas fa-check icon"></i>Collection Complete
+                        </span><br>
+                        Please board Bus Number <strong>${window.lastEmployeeData.busNumber}</strong>. Your Room No is <strong>${window.lastEmployeeData.roomNumber}</strong>.<br><br>
+                        <button class="confirm-btn" onclick="downloadPDF(window.lastEmployeeData)" style="background: linear-gradient(135deg, #667eea, #764ba2); margin-top: 10px;">
+                            <i class="fas fa-download icon"></i>
+                            Download Ticket as PDF
+                        </button>
+                    </div>`;
+            }).updateStatus(row);
+        }
+
+        // Add Enter key support for EmployeeID input
+        document.getElementById("employeeId").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                check();
+            }
+        });
+
+        // Upload ID proof function
+        function uploadIdProof(employeeId) {
+            const type = document.getElementById("idProofType").value;
+            const fileInput = document.getElementById("idProofFile");
+            const resultDiv = document.getElementById("result");
+            if (!type) {
+                resultDiv.innerHTML += `<div class='result-box error-box'><i class='fas fa-exclamation-triangle icon'></i>Please select ID proof type</div>`;
+                return;
+            }
+            if (!fileInput.files || fileInput.files.length === 0) {
+                resultDiv.innerHTML += `<div class='result-box error-box'><i class='fas fa-exclamation-triangle icon'></i>Please upload your ID proof file</div>`;
+                return;
+            }
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Data = e.target.result.split(',')[1];
+                resultDiv.innerHTML = `<div class='result-box info-box'><span class='loading'></span>Uploading your ID proof...</div>`;
+                google.script.run.withSuccessHandler(function(msg) {
+                    resultDiv.innerHTML = `<div class='result-box success-box'><i class='fas fa-check-circle icon'></i>${msg}</div>`;
+                }).uploadIdProof({
+                    employeeId: employeeId,
+                    idProofType: type,
+                    fileName: `${type}_${employeeId}`,
+                    mimeType: file.type,
+                    base64: base64Data
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
