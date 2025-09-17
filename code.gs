@@ -15,6 +15,8 @@ function checkEmployeeId(employeeId) {
   const busSPOCIdx = headers.indexOf('BusSPOCNumber');
   const nameIdx = 1; // Name column index (assuming it's column B)
 
+  var idTypeCol = headers.indexOf('IDProof');
+  var submittedCol = headers.indexOf('Submitted');
   for (let i = 1; i < data.length; i++) {
     if ((data[i][0] + '').toLowerCase() === (employeeId + '').toLowerCase()) {
       const collected = data[i][2];
@@ -22,24 +24,19 @@ function checkEmployeeId(employeeId) {
       const timeStr = time
         ? Utilities.formatDate(new Date(time), tz, 'dd-MMM-yyyy hh:mm a')
         : '';
-      
-      // Get room partners - find all employees with same room number excluding current employee
       const currentRoom = roomIdx !== -1 ? data[i][roomIdx] : '';
       const currentName = data[i][nameIdx];
       const roomPartners = [];
-      
       if (currentRoom && currentRoom !== '') {
         for (let j = 1; j < data.length; j++) {
-          if (j !== i && // Not the current employee
-              roomIdx !== -1 && 
-              data[j][roomIdx] === currentRoom && // Same room number
-              data[j][nameIdx] && // Has a name
-              data[j][nameIdx] !== '') { // Name is not empty
+          if (j !== i && roomIdx !== -1 && data[j][roomIdx] === currentRoom && data[j][nameIdx] && data[j][nameIdx] !== '') {
             roomPartners.push(data[j][nameIdx]);
           }
         }
       }
-      
+      // Check if ID proof is already submitted
+      var alreadySubmitted = submittedCol !== -1 ? (data[i][submittedCol] + '').toLowerCase() === 'yes' : false;
+      var idProofType = idTypeCol !== -1 ? data[i][idTypeCol] : '';
       return {
         row: i + 1,
         name: data[i][1],
@@ -49,7 +46,9 @@ function checkEmployeeId(employeeId) {
         roomNumber: roomIdx !== -1 ? data[i][roomIdx] : '',
         employeeId: employeeId,
         busSPOCNumber: busSPOCIdx !== -1 ? data[i][busSPOCIdx] : '',
-        roomPartners: roomPartners
+        roomPartners: roomPartners,
+        alreadySubmitted: alreadySubmitted,
+        idProofType: idProofType
       };
     }
   }
@@ -99,10 +98,17 @@ function uploadIdProof(data) {
       sheet.getRange(1, headers.length + 2).setValue('IDProofURL');
       urlCol = headers.length + 1;
     }
+    var submittedCol = headers.indexOf('Submitted');
+    if (submittedCol === -1) {
+      sheet.insertColumnAfter(headers.length + 2);
+      sheet.getRange(1, headers.length + 3).setValue('Submitted');
+      submittedCol = headers.length + 2;
+    }
     for (var i = 1; i < dataRange.length; i++) {
       if ((dataRange[i][idCol] + '').toLowerCase() === (data.employeeId + '').toLowerCase()) {
         sheet.getRange(i + 1, idTypeCol + 1).setValue(data.idProofType);
         sheet.getRange(i + 1, urlCol + 1).setValue(file.getUrl());
+        sheet.getRange(i + 1, submittedCol + 1).setValue('Yes');
         break;
       }
     }
