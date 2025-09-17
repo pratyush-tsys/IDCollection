@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ID Proof Collection</title>
+    <link rel="preload" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" as="image">
+    <link rel="preload" href="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" as="image">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -125,11 +127,12 @@
 <body>
     <div class="container">
         <div class="header">
-            <h2><i class="fas fa-id-card icon"></i>ID Proof Collection</h2>
-            <p class="subtitle">Submit your ID proof for event verification</p>
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="ID Proof" style="width:70px;height:70px;margin-bottom:10px;box-shadow:0 4px 16px rgba(102,126,234,0.15);border-radius:50%;background:#fff;">
+            <h2 style="margin-top:10px;"><i class="fas fa-id-card icon"></i> ID Proof Collection</h2>
+            <p class="subtitle">Submit your ID proof for Punarnava Hotel Check-In</p>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:35px;">
             <label for="employeeId" class="form-label">
                 <i class="fas fa-id-card icon"></i>Enter Your EmployeeID
             </label>
@@ -149,8 +152,8 @@
         <div id="result" class="result-container"></div>
 
         <div class="footer">
-            <i class="fas fa-info-circle icon"></i>
-            Please ensure you enter the correct EmployeeID registered for the event
+            <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" alt="Security" style="width:32px;height:32px;vertical-align:middle;margin-right:8px;box-shadow:0 2px 8px rgba(102,126,234,0.10);border-radius:50%;background:#fff;">
+            <span style="vertical-align:middle;">Please ensure you enter the correct EmployeeID registered for the event</span>
         </div>
     </div>
 
@@ -280,15 +283,32 @@
                     <div class="result-box error-box">
                         <i class="fas fa-times-circle icon"></i>
                         <strong>EmployeeID not found</strong><br>
-                        Please check your EmployeeID or contact the organizers
+                        Please check your EmployeeID or contact the Prime Events Committee !
                     </div>`;
                 return;
             }
             window.lastData = data;
             window.lastEmployeeData = data;
+            // If already submitted, show info and prevent upload
+            if (data.alreadySubmitted) {
+                div.innerHTML = `
+                    <div class="result-box success-box">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="ID Proof" style="width:48px;height:48px;margin-bottom:8px;box-shadow:0 2px 8px rgba(32,191,107,0.10);border-radius:50%;background:#fff;">
+                        <i class="fas fa-check-circle icon"></i>
+                        <strong>ID Proof Already Submitted!</strong><br>
+                        Hello <span class="user-name">${data.name}</span>!<br>
+                        <span class="status-badge status-collected">
+                            <i class="fas fa-id-card icon"></i>Type: <strong>${data.idProofType || 'N/A'}</strong>
+                        </span><br>
+                        You have already submitted your ID proof.<br>
+                        If you need to update, please contact the organizers.
+                    </div>`;
+                return;
+            }
             // Show ID proof dropdown and upload section
             div.innerHTML = `
                 <div class="result-box info-box">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="ID Proof" style="width:40px;height:40px;margin-bottom:8px;box-shadow:0 2px 8px rgba(102,126,234,0.10);border-radius:50%;background:#fff;">
                     <i class="fas fa-user icon"></i>
                     Hello <span class="user-name">${data.name}</span>!<br>
                     <span class="status-badge status-pending">
@@ -298,6 +318,7 @@
                 <div class="result-box" style="background: white; border: 2px solid #e1e8f0;">
                     <div class="form-group">
                         <label for="idProofType" class="form-label">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="ID Proof" style="width:24px;height:24px;vertical-align:middle;margin-right:8px;box-shadow:0 1px 4px rgba(102,126,234,0.10);border-radius:50%;background:#fff;">
                             <i class="fas fa-id-card icon"></i>Choose ID Proof Type
                         </label>
                         <select id="idProofType" class="employeeid-input">
@@ -309,14 +330,19 @@
                             <option value="Passport">Passport</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="text-align:center;">
                         <label for="idProofFile" class="form-label">
-                            <i class="fas fa-upload icon"></i>Upload ID Proof
+                            <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" alt="Upload" style="width:24px;height:24px;vertical-align:middle;margin-right:8px;box-shadow:0 1px 4px rgba(32,191,107,0.10);border-radius:50%;background:#fff;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#667eea" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:8px;"><path d="M12 16v-8m0 0l-4 4m4-4l4 4M4 20h16" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Upload ID Proof
                         </label>
-                        <input type="file" id="idProofFile" accept="image/*,.pdf" class="employeeid-input" />
+                        <input type="file" id="idProofFile" accept="image/*,.pdf" class="employeeid-input" style="margin-top:8px;" />
+                        <div style="margin-top:10px;">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="ID" style="width:32px;height:32px;vertical-align:middle;margin-right:8px;box-shadow:0 1px 4px rgba(102,126,234,0.10);border-radius:50%;background:#fff;">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" alt="Security" style="width:32px;height:32px;vertical-align:middle;margin-right:8px;box-shadow:0 1px 4px rgba(32,191,107,0.10);border-radius:50%;background:#fff;">
+                        </div>
                     </div>
-                    <button class="confirm-btn" onclick="uploadIdProof('${data.employeeId}')">
-                        <i class="fas fa-upload"></i>Submit ID Proof
+                    <button class="confirm-btn" onclick="uploadIdProof('${data.employeeId}')" style="margin-top:10px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#fff" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:8px;"><path d="M12 16v-8m0 0l-4 4m4-4l4 4M4 20h16" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Submit ID Proof
                     </button>
                 </div>`;
         }
